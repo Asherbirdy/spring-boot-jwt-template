@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace 必須是對應的 DAO 介面全名，MyBatis 靠它把介面方法和下面的 SQL id 綁在一起 -->
+<mapper namespace="com.app.security.dao.MemberDao">
+
+    <!-- 單一參數（email）可用任意名稱；查無資料時回傳 null，行為與原本 get(0) 一致 -->
+    <select id="getMemberByEmail" resultType="com.app.security.model.Member">
+        SELECT member_id, name, email, password, role, created_at, updated_at
+        FROM member
+        WHERE email = #{email}
+    </select>
+
+    <select id="getMemberById" resultType="com.app.security.model.Member">
+        SELECT member_id, name, email, password, role, created_at, updated_at
+        FROM member
+        WHERE member_id = #{memberId}
+    </select>
+
+    <select id="getAllMembers" resultType="com.app.security.model.Member">
+        SELECT member_id, name, email, password, role, created_at, updated_at
+        FROM member
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="getRoleMembers" resultType="com.app.security.model.Member">
+        SELECT member_id, name, email, password, role, created_at, updated_at
+        FROM member
+        WHERE role = #{role}
+    </select>
+
+    <!-- #{xxx} 直接對應傳入 Member 物件的屬性；role 為 null 時用 COALESCE 補預設 'user'（與原本 impl 一致） -->
+    <insert id="insertMember">
+        INSERT INTO member(member_id, name, email, password, role, created_at, updated_at)
+        VALUES (#{memberId}, #{name}, #{email}, #{password}, COALESCE(#{role}, 'user'), NOW(), NOW())
+    </insert>
+
+    <update id="updateRole">
+        UPDATE member
+        SET role = #{role},
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+    </update>
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.app.security.dao.TokenDao">
+
+    <select id="getValidTokenByMemberId" resultType="com.app.security.model.Token">
+        SELECT token_id, refresh_token, ip, user_agent, is_valid, member_id, created_at, updated_at
+        FROM token
+        WHERE member_id = #{memberId} AND is_valid = true
+        LIMIT 1
+    </select>
+
+    <insert id="insertToken">
+        INSERT INTO token(token_id, refresh_token, ip, user_agent, is_valid, member_id, created_at, updated_at)
+        VALUES (#{tokenId}, #{refreshToken}, #{ip}, #{userAgent}, #{isValid}, #{memberId}, NOW(), NOW())
+    </insert>
+
+    <delete id="deleteTokensByMemberId">
+        DELETE FROM token
+        WHERE member_id = #{memberId}
+    </delete>
+
+</mapper>

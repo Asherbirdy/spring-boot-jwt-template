@@ -17,44 +17,41 @@ mvn clean package -DskipTests  # Build without tests
 
 ## Architecture
 
-Spring Boot 3.1.5 app with layered architecture using Spring JDBC (not JPA):
+Spring Boot 3.1.5 app with layered architecture using MyBatis 3 (not JPA, not raw Spring JDBC):
 
 ```
-Controller → Service (interface + impl) → DAO (interface + impl) → PostgreSQL
+Controller → Service (interface + impl) → DAO (@Mapper 介面 + XML) → PostgreSQL
 ```
 
-All code lives under `com.app.security`. DAO layer uses `NamedParameterJdbcTemplate` with raw SQL and `RowMapper` classes for result mapping.
+All code lives under `com.app.security`. DAO 層是純 Mapper 介面（`com.app.security.dao`），由啟動類的 `@MapperScan("com.app.security.dao")` 掃描，SQL 寫在 `src/main/resources/mapper/*.xml`。沒有 `DaoImpl`、沒有 `RowMapper` —— MyBatis 在執行期用動態代理實作介面，並靠 `mybatis.configuration.map-underscore-to-camel-case=true`（見 `application.properties`）自動把 snake_case 欄位對應到 camelCase 屬性。
 
-### Model / RowMapper / schema.sql 同步規則
+### Model / XML Mapper / schema.sql 同步規則
 
 當改動到下列任一檔案時，必須同步檢查並更新另外兩個，保持三者一致：
 
 - `src/main/java/com/app/security/model/*.java`（model 欄位、型別）
-- `src/main/java/com/app/security/rowmapper/*.java`（DB 欄位 → model setter 的對應）
+- `src/main/resources/mapper/*.xml`（SQL 的 SELECT 欄位清單、INSERT/UPDATE 的 `#{...}` 屬性）
 - `src/test/resources/schema.sql`（DB 表結構、欄位名、型別、約束）
 
-慣例：DB 欄位用 snake_case（如 `product_category_id`），Java model 欄位用 camelCase（如 `productCategoryId`），RowMapper 負責橋接兩者。新增欄位、改名、改型別、加減約束時都要三邊一起改。
+慣例：DB 欄位用 snake_case（如 `product_category_id`），Java model 欄位用 camelCase（如 `productCategoryId`），MyBatis 的 underscore-to-camel-case 負責橋接兩者（不需手寫 resultMap）。新增欄位、改名、改型別、加減約束時都要三邊一起改。
 
-### DAO SQL 字串慣例
+### DAO / Mapper 慣例
 
-DAO 內所有 SQL 字串一律使用 Java text block (`"""..."""`)，不要用 `"..." + "..."` 字串串接或單行字串。需要動態插入欄位常數（例如 `COLUMNS`）時用 `.formatted(...)`。
+- DAO 介面放 `com.app.security.dao`，方法對應 XML 中同名的 `<select>/<insert>/<update>/<delete>` id；XML 的 `namespace` 必須是介面全名。
+- 方法有**多個參數**時，每個參數都要加 `@Param("xxx")`，XML 才能用 `#{xxx}` 對應；單一參數方法可省略。
+- 參數綁定一律用 `#{...}`（PreparedStatement 佔位符，防 SQL injection），不要用 `${...}` 字串插值。
+- 需要「Java 端產生 id（UUID）後回傳」的 insert：在介面用 `default` method 產生 UUID、set 進 model、再委派給對應 XML 的 `insertXxx`（回傳影響筆數），最後回傳 id。參考 `MemberDao.createMember` / `TokenDao.createToken`。
+- 動態條件查詢優先用 MyBatis 標籤（`<if>`、`<foreach>`、`<choose>`），不要在 Java 端拼 SQL 字串。
 
 範例：
 
-```java
-String sql = """
-        UPDATE store_checkout
-        SET order_status = :orderStatus,
-            updated_at = NOW()
-        WHERE store_checkout_id = :storeCheckoutId
-        """;
-
-String sql = """
-        SELECT %s
-        FROM store_checkout
-        WHERE store_id = :storeId
-        ORDER BY checkout_at DESC
-        """.formatted(COLUMNS);
+```xml
+<update id="updateRole">
+    UPDATE member
+    SET role = #{role},
+        updated_at = NOW()
+    WHERE member_id = #{memberId}
+</update>
 ```
 
 ### Controller 註解排列慣例
