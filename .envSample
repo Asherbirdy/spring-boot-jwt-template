@@ -1,0 +1,7 @@
+DB_URL=jdbc:postgresql://localhost:5432/poscloud
+DB_USERNAME=
+DB_PASSWORD=
+CORS_ALLOWED_ORIGINS=http://localhost:1207
+
+# Docker 啟動 app 容器時連本機 Postgres 用的 URL（docker-compose 會覆蓋 DB_URL）
+DOCKER_DB_URL=jdbc:postgresql://host.docker.internal:5432/poscloud

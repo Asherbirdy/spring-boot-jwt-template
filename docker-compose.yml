@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    image: pos-cloud-app:latest
+    container_name: pos-cloud-app
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    environment:
+      DB_URL: ${DOCKER_DB_URL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

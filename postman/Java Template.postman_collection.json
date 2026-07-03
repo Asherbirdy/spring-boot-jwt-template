@@ -1,0 +1,458 @@
+{
+  "info": {
+    "_postman_id": "04d84378-2fe5-4bdb-a524-0fcf0f4ebd69",
+    "name": "Java Template",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26884449"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 解析回應的 JSON 數據",
+                  "var data = pm.response.json();",
+                  "",
+                  "// 檢查回應中是否包含 accessTokenJWT",
+                  "if (data.token && data.token.accessTokenJWT) {",
+                  "    // 將 accessTokenJWT 保存到環境變數中",
+                  "    pm.environment.set(\"accessTokenJWT\", data.token.accessTokenJWT);",
+                  "    console.log(\"accessTokenJWT saved to environment:\", data.token.accessTokenJWT);",
+                  "} else {",
+                  "    console.log(\"No accessTokenJWT found in response\");",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\":\"\",\n    \"password\":\"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/login",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"UserAccount\",\n    \"email\":\"user@gmail.com\",\n    \"password\":\"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/register",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Admin",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"UserAccount\",\n    \"email\":\"user@gmail.com\",\n    \"password\":\"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/auth/register-admin",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "auth",
+                "register-admin"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Member",
+      "item": [
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"asherbirder\",\n    \"email\":\"\",\n    \"password\":\"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/member/logout",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "member",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Show Current User",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessTokenJWT}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"asdasd\",\n    \"score\":13.3,\n    \"graduate\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/member/showMe",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "member",
+                "showMe"
+              ],
+              "query": [
+                {
+                  "key": "6752a05ce1491d9da0373931",
+                  "value": null,
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Enterprise",
+      "item": [
+        {
+          "name": "Get Enterprise",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/enterprise/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Enterprise",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessTokenJWT}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/enterprise/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Enterprise",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"好愛我\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/enterprise/fdda207b-e2be-4384-aa1c-6e2bcf1e5a16/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                "fdda207b-e2be-4384-aa1c-6e2bcf1e5a16",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Store",
+      "item": [
+        {
+          "name": "Get All Store from Enterprise",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/enterprise/fdda207b-e2be-4384-aa1c-6e2bcf1e5a16/store/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                "fdda207b-e2be-4384-aa1c-6e2bcf1e5a16",
+                "store",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Store from EnterpriseId",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"tesasdasdast2\",\n    \"isActive\":false,\n    \"user_agents\":[\"asdasdasdasd\",\"adasdass\"],\n    \"running_devices_limit\":10\n\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/enterprise/fdda207b-e2be-4384-aa1c-6e2bcf1e5a16/store/acceeb7d-59da-4edf-b543-514d728d46c8",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                "fdda207b-e2be-4384-aa1c-6e2bcf1e5a16",
+                "store",
+                "acceeb7d-59da-4edf-b543-514d728d46c8"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Store EnterpriseId",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"東湖店2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/enterprise/fdda207b-e2be-4384-aa1c-6e2bcf1e5a16/store/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "enterprise",
+                "fdda207b-e2be-4384-aa1c-6e2bcf1e5a16",
+                "store",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Member Store Access",
+      "item": [
+        {
+          "name": "Create Member Access",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/member-store-access/",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "member-store-access",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Access By StoreId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/member-store-access/asdasas",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "member-store-access",
+                "asdasas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Access By StoreId Copy",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/member-store-access/asdasas",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "member-store-access",
+                "asdasas"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "URL",
+      "value": "https://sheep-backend-dist.onrender.com/api/v1",
+      "type": "string"
+    }
+  ]
+}
