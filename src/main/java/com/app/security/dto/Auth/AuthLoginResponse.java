@@ -4,9 +4,9 @@ public class AuthLoginResponse {
     private final String name;
     private final String memberId;
     private final String role;
-    private final TokenPair tokenPair;
+    private final AuthTokenPair tokenPair;
 
-    public AuthLoginResponse(String name, String memberId, String role, TokenPair tokenPair) {
+    public AuthLoginResponse(String name, String memberId, String role, AuthTokenPair tokenPair) {
         this.name = name;
         this.memberId = memberId;
         this.role = role;
@@ -25,7 +25,7 @@ public class AuthLoginResponse {
         return role;
     }
 
-    public TokenPair getTokenPair() {
+    public AuthTokenPair getTokenPair() {
         return tokenPair;
     }
 }

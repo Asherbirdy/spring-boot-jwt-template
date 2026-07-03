@@ -3,8 +3,8 @@ package com.app.security.controller;
 import com.app.security.dto.Auth.AuthLoginResponse;
 import com.app.security.dto.Auth.AuthRefreshTokenResponse;
 import com.app.security.dto.Auth.AuthRegisterResponse;
-import com.app.security.dto.Auth.LoginRequest;
-import com.app.security.dto.Auth.RegisterRequest;
+import com.app.security.dto.Auth.AuthLoginRequest;
+import com.app.security.dto.Auth.AuthRegisterRequest;
 import com.app.security.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +33,7 @@ public class AuthController {
      * 用於前台會員自助註冊流程。
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthRegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<AuthRegisterResponse> register(@Valid @RequestBody AuthRegisterRequest registerRequest) {
         AuthRegisterResponse user = authService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
@@ -43,7 +43,7 @@ public class AuthController {
      * 並將 access / refresh token 寫入 HttpOnly cookie。
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthLoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<AuthLoginResponse> login(@Valid @RequestBody AuthLoginRequest loginRequest) {
         AuthLoginResponse user = authService.login(loginRequest);
         return ResponseEntity.status(HttpStatus.OK).body(user);
     }
@@ -53,7 +53,7 @@ public class AuthController {
      * 用於系統初始化或內部建立後台管理員。
      */
     @PostMapping("/register-admin")
-    public ResponseEntity<AuthRegisterResponse> registerAdmin(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<AuthRegisterResponse> registerAdmin(@Valid @RequestBody AuthRegisterRequest registerRequest) {
         AuthRegisterResponse admin = authService.registerAdmin(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(admin);
     }

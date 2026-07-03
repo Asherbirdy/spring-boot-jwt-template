@@ -43,12 +43,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthRegisterResponse register(RegisterRequest registerRequest) {
+    public AuthRegisterResponse register(AuthRegisterRequest registerRequest) {
         return createMemberWithRole(registerRequest, "user");
     }
 
     @Override
-    public AuthRegisterResponse registerAdmin(RegisterRequest registerRequest) {
+    public AuthRegisterResponse registerAdmin(AuthRegisterRequest registerRequest) {
         // 檢查是否已有 admin
         List<Member> existingAdmins = memberDao.getRoleMembers("admin");
         if (!existingAdmins.isEmpty()) {
@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
         return createMemberWithRole(registerRequest, "admin");
     }
 
-    private AuthRegisterResponse createMemberWithRole(RegisterRequest registerRequest, String role) {
+    private AuthRegisterResponse createMemberWithRole(AuthRegisterRequest registerRequest, String role) {
         String name = registerRequest.getName();
         String email = registerRequest.getEmail();
         String password = registerRequest.getPassword();
@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthLoginResponse login(LoginRequest loginRequest) {
+    public AuthLoginResponse login(AuthLoginRequest loginRequest) {
         Member member = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
         return issueTokens(member);
     }
@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenStr = createRefreshToken(memberId);
         }
 
-        TokenPair token = attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
+        AuthTokenPair token = attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
         return new AuthLoginResponse(member.getName(), memberId, member.getRole(), token);
     }
 
@@ -217,7 +217,7 @@ public class AuthServiceImpl implements AuthService {
         return refreshTokenStr;
     }
 
-    private TokenPair attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
+    private AuthTokenPair attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
         HttpServletResponse response = getCurrentResponse();
         String accessTokenJwt = jwtUtil.createAccessToken(memberId, name, email, role);
         String refreshTokenJwt = jwtUtil.createRefreshToken(memberId, email, refreshTokenStr);
@@ -235,7 +235,7 @@ public class AuthServiceImpl implements AuthService {
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
 
-        return new TokenPair(accessTokenJwt, refreshTokenJwt);
+        return new AuthTokenPair(accessTokenJwt, refreshTokenJwt);
     }
 
 }

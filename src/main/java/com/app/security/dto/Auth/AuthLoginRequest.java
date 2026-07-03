@@ -2,7 +2,7 @@ package com.app.security.dto.Auth;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class LoginRequest {
+public class AuthLoginRequest {
 
     @NotBlank
     private String email;

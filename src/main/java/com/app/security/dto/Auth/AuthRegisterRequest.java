@@ -2,7 +2,7 @@ package com.app.security.dto.Auth;
 
 import jakarta.validation.constraints.NotBlank;
 
-public class RegisterRequest {
+public class AuthRegisterRequest {
 
     @NotBlank
     private String name;
