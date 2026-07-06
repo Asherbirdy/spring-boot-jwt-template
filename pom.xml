@@ -123,6 +123,13 @@
             <version>8.10.1</version>
         </dependency>
 
+        <!-- Lombok（版本由 spring-boot-starter-parent 控管） -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
 
     <build>
