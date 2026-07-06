@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,11 +26,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final TokenDao tokenDao;
     private final MemberDao memberDao;
+    private final boolean cookieSecure;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenDao tokenDao, MemberDao memberDao) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenDao tokenDao, MemberDao memberDao, boolean cookieSecure) {
         this.jwtUtil = jwtUtil;
         this.tokenDao = tokenDao;
         this.memberDao = memberDao;
+        this.cookieSecure = cookieSecure;
     }
 
     @Override
@@ -75,11 +78,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         String newAccessToken = jwtUtil.createAccessToken(
                                 memberId, member.getName(), member.getEmail(), member.getRole());
 
-                        Cookie accessCookie = new Cookie("accessToken", newAccessToken);
-                        accessCookie.setHttpOnly(true);
-                        accessCookie.setPath("/");
-                        accessCookie.setMaxAge((int) (jwtUtil.getAccessTokenExpirationMs() / 1000));
-                        response.addCookie(accessCookie);
+                        ResponseCookie accessCookie = ResponseCookie.from("accessToken", newAccessToken)
+                                .httpOnly(true)
+                                .secure(cookieSecure)
+                                .path("/")
+                                .sameSite("None")
+                                .maxAge(jwtUtil.getAccessTokenExpirationMs() / 1000)
+                                .build();
+                        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
 
                         // 設定認證
                         Claims newClaims = jwtUtil.parseToken(newAccessToken);

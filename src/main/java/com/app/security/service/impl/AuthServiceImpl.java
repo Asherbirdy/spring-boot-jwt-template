@@ -8,10 +8,12 @@ import com.app.security.model.Token;
 import com.app.security.security.JwtUtil;
 import com.app.security.service.AuthService;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +35,9 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtUtil jwtUtil;
+
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
 
     public AuthServiceImpl(MemberDao memberDao, TokenDao tokenDao,
                            PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
@@ -112,8 +117,8 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenStr = createRefreshToken(memberId);
         }
 
-        AuthTokenPair token = attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
-        return new AuthLoginResponse(member.getName(), memberId, member.getRole(), token);
+        attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
+        return new AuthLoginResponse(member.getName(), memberId, member.getRole());
     }
 
     @Override
@@ -124,18 +129,9 @@ public class AuthServiceImpl implements AuthService {
         // 刪除該使用者所有 token
         tokenDao.deleteTokensByMemberId(memberId);
 
-        // 清除 Cookie
-        Cookie accessCookie = new Cookie("accessToken", "");
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(0);
-        response.addCookie(accessCookie);
-
-        Cookie refreshCookie = new Cookie("refreshToken", "");
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(0);
-        response.addCookie(refreshCookie);
+        // 清除 Cookie（maxAge=0 讓瀏覽器立即刪除）
+        response.addHeader(HttpHeaders.SET_COOKIE, buildTokenCookie("accessToken", "", 0).toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, buildTokenCookie("refreshToken", "", 0).toString());
     }
 
     @Override
@@ -217,25 +213,32 @@ public class AuthServiceImpl implements AuthService {
         return refreshTokenStr;
     }
 
-    private AuthTokenPair attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
+    private void attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
         HttpServletResponse response = getCurrentResponse();
         String accessTokenJwt = jwtUtil.createAccessToken(memberId, name, email, role);
         String refreshTokenJwt = jwtUtil.createRefreshToken(memberId, email, refreshTokenStr);
 
-        Cookie accessCookie = new Cookie("accessToken", accessTokenJwt);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge((int) (jwtUtil.getAccessTokenExpirationMs() / 1000));
+        ResponseCookie accessCookie = buildTokenCookie(
+                "accessToken", accessTokenJwt, jwtUtil.getAccessTokenExpirationMs() / 1000);
+        ResponseCookie refreshCookie = buildTokenCookie(
+                "refreshToken", refreshTokenJwt, jwtUtil.getRefreshTokenExpirationMs() / 1000);
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshTokenJwt);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge((int) (jwtUtil.getRefreshTokenExpirationMs() / 1000));
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
-
-        return new AuthTokenPair(accessTokenJwt, refreshTokenJwt);
+    /**
+     * 統一建立 token cookie：HttpOnly + Secure + SameSite=None，供跨網域前後端分離使用。
+     * maxAgeSeconds 傳 0 代表要求瀏覽器立即刪除該 cookie。
+     */
+    private ResponseCookie buildTokenCookie(String name, String value, long maxAgeSeconds) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .sameSite("None")
+                .maxAge(maxAgeSeconds)
+                .build();
     }
 
 }

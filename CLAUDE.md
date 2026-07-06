@@ -67,7 +67,7 @@ Controller 方法上的註解一律將 Spring mapping 註解（`@GetMapping`、`
 
 ### Authentication & Security
 
-- Stateless JWT auth, **前後端分離**：登入成功時於 `AuthLoginResponse.tokenPair` 回傳 `{ accessToken, refreshToken }`，前端自行存進非 HttpOnly cookie；後續請求由前端在 `Authorization: Bearer <accessToken>` header 帶上，後端不依賴 cookie 傳 token。
+- Stateless JWT auth：登入成功時後端把 `accessToken` / `refreshToken` 寫進 **HttpOnly + Secure + SameSite=None** cookie（見 `AuthServiceImpl.buildTokenCookie`），`AuthLoginResponse` 只回會員基本資料、**不含 token**。`Secure` 由 `.env` 的 `COOKIE_SECURE` 控制（`application.properties` 的 `cookie.secure=${COOKIE_SECURE:true}`，未設預設 true；本機純 http 開發設 false）。`JwtAuthenticationFilter` 讀取 token 時仍相容 `Authorization: Bearer <accessToken>` header，找不到才 fallback 讀 cookie。
 - Access token (15 min) + refresh token (24 hr) stored in `token` table with IP/User-Agent tracking
 - `JwtAuthenticationFilter` auto-refreshes expired access tokens using valid refresh tokens
 - Route security in `MySecurityConfig`: `/auth/**` 與 `/dev/test` public、`/enterprise/**` 與 `/member-store-access/**` 需 `admin`、`/member/**`、`/storeShift/**`、`/product-category/**`、`/product-item/**`、`/logout` 需 authenticated，其餘 `denyAll`

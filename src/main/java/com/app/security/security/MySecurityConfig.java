@@ -35,6 +35,9 @@ public class MySecurityConfig {
     @Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
 
+    @Value("${cookie.secure}")
+    private boolean cookieSecure;
+
     public MySecurityConfig(JwtUtil jwtUtil, TokenDao tokenDao, MemberDao memberDao) {
         this.jwtUtil = jwtUtil;
         this.tokenDao = tokenDao;
@@ -71,7 +74,7 @@ public class MySecurityConfig {
 
                 // 添加 JWT Filter
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtUtil, tokenDao, memberDao),
+                        new JwtAuthenticationFilter(jwtUtil, tokenDao, memberDao, cookieSecure),
                         UsernamePasswordAuthenticationFilter.class
                 )
 

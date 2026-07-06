@@ -39,8 +39,8 @@ public class AuthController {
     }
 
     /**
-     * 使用 email + 密碼登入，成功後回傳 tokenPair（accessToken / refreshToken），
-     * 並將 access / refresh token 寫入 HttpOnly cookie。
+     * 使用 email + 密碼登入，成功後將 access / refresh token 寫入 HttpOnly cookie。
+     * token 只透過 cookie 傳遞，response body 僅回傳會員基本資料（不含 token）。
      */
     @PostMapping("/login")
     public ResponseEntity<AuthLoginResponse> login(@Valid @RequestBody AuthLoginRequest loginRequest) {
