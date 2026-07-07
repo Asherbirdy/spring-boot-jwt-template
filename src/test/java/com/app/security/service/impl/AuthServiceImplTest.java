@@ -16,11 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AuthServiceImplTest extends AuthTestSupport {
 
     /**
-     * 驗證：正確帳密打 /auth/login，應回 200，並在回應寫入 accessToken / refreshToken cookie
-     * （token 只走 cookie，response body 不再含 tokenPair）。
+     * 驗證：正確帳密打 /auth/login，應回 200、tokenPair.accessToken 存在，
+     * 並在回應寫入 accessToken / refreshToken cookie。
      */
     @Test
-    @DisplayName("login: 正確帳密寫入 accessToken / refreshToken cookie")
+    @DisplayName("login: 正確帳密回傳 tokenPair 與 cookie")
     public void login_correctCredentials_returnsToken() throws Exception {
         Map<String, String> body = Map.of(
                 "email", "user@gmail.com",
@@ -32,7 +32,8 @@ public class AuthServiceImplTest extends AuthTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tokenPair").doesNotExist())
+                .andExpect(jsonPath("$.tokenPair.accessToken").exists())
+                .andExpect(jsonPath("$.tokenPair.refreshToken").exists())
                 .andExpect(cookie().exists("accessToken"))
                 .andExpect(cookie().exists("refreshToken"));
     }

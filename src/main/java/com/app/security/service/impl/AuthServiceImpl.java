@@ -117,8 +117,8 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenStr = createRefreshToken(memberId);
         }
 
-        attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
-        return new AuthLoginResponse(member.getName(), memberId, member.getRole());
+        AuthTokenPair token = attachCookieToResponse(memberId, member.getName(), member.getEmail(), member.getRole(), refreshTokenStr);
+        return new AuthLoginResponse(member.getName(), memberId, member.getRole(), token);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class AuthServiceImpl implements AuthService {
         return refreshTokenStr;
     }
 
-    private void attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
+    private AuthTokenPair attachCookieToResponse(String memberId, String name, String email, String role, String refreshTokenStr) {
         HttpServletResponse response = getCurrentResponse();
         String accessTokenJwt = jwtUtil.createAccessToken(memberId, name, email, role);
         String refreshTokenJwt = jwtUtil.createRefreshToken(memberId, email, refreshTokenStr);
@@ -225,6 +225,8 @@ public class AuthServiceImpl implements AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return new AuthTokenPair(accessTokenJwt, refreshTokenJwt);
     }
 
     /**
